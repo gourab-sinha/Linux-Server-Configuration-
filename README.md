@@ -78,4 +78,28 @@ User grader may run the following commands on
 ```
 The X here represents the private IP
 
+## Provide Grader SSH Login
+1. Log out of your SSH instance and in your local machine run `pwd`
+2. If the output is \home\vagrant this your home directory. Here run `cd .ssh`
+3. In the .ssh directory create a file called grader_auth. Go back to your home directory.
+4. Run `ssh-keygen` and store the result in grader_auth that was created. You will be asked for a passphrase, which in this instance was set to grader. 
+5. Return to your virtual machine with `ssh -i ~/.ssh/lightsail.rsa ubuntu@13.127.69.43` and login as grader. You can choose to have your virtual machine open in a seperate terminal at this point.
+6. In grader run touch `.ssh/authorized_keys`
+7. On local machine run `sudo cat ~/.ssh/grader_auth.pub`. Copy the file contents and paste them into the authorized_keys file in grader using nano or vim. Make sure the content stays on a single line.
+8. Inside grader run `chmod 700 .ssh`  and `chmod 644 .ssh/authorized_keys` to set permissions.
+9. Run `sudo nano /etc/ssh/sshd_config` and here set PasswordAuthentication to no. Save and exit
+10. Logout of the virtual machine and in your local machine type `ssh -i ~/.ssh/grader_auth -p 2200 grader@13
+.127.69.43`  A popup or prompt will ask you for the passphrase. Enter that and you're now logged in as grader.
+*NOTE- Some users can experience an error while logging in as grader from their local machine their message may read *access denied, (public Key)*. To avoid this you could set permission on your grader_auth file in .ssh directory with `chmod 600 grader_auth` command.
+
+### Configure Timezone to UTC
+To change timezone run `sudo dpkg-reconfigure tzdata` in grader. A set of instruction will appear for the user to follow. The UTC option can be found under **None of the above** option.
+
+### Install Apache
+1. Inside grader run `sudo apt-get install apache2`
+2. To check if your apache installation was successful type in you public IP in your browser. If the default apache page renders correctly, the installation is complete.
+### Install mod_wsgi
+1. Run `sudo apt-get install python-setuptools libapache2-mod-wsgi`
+2. Restart Apache at this point with `sudo service apache2 restart`
+
 
