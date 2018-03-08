@@ -24,7 +24,7 @@ The instructions here can be easily adapted to deploy such projects on amazon's 
 6. Open the default key file downloaded earlier in an editor and copy its text. Paste this into a new file called lightsail.rsa
 7. Move lightsail to the ubuntu system running in your vagrant machine. Move the file to /.ssh/ directory.
 8. To protect this file with permissions type `chmod 600 ~/.ssh/lightsail.rsa` 
-9. To connect with the SSH instance run `ssh -i ~/.ssh/lightrail_key.rsa ubuntu@13.127.69.43`
+9. To connect with the SSH instance run `ssh -i ~/.ssh/lightsail.rsa ubuntu@13.127.69.43`
 ## Installation of updates 
 To keep your work secure regular updates are neccessary. Once you're connected to SSH instance run `sudo apt-get update`. After this process type `sudo apt-get upgrade` 
 
@@ -101,5 +101,56 @@ To change timezone run `sudo dpkg-reconfigure tzdata` in grader. A set of instru
 ### Install mod_wsgi
 1. Run `sudo apt-get install python-setuptools libapache2-mod-wsgi`
 2. Restart Apache at this point with `sudo service apache2 restart`
-
-
+### Install and configure Postgresql
+1. Install postgresql with `sudo apt-get install postgresql`
+2. Run `sudo nano /etc/postgresql/9.5/main/pg_hba.conf` and check if your output(without comments) looks like this:
+```
+local   all             postgres                                peer
+local   all             all                                     peer
+host    all             all             127.0.0.1/32            md5
+host    all             all             ::1/128                 md5
+```
+### Python Installation
+Usually python is pre installed with the updates. You could check this by running `python` in the command prompt. The output should look like this:
+```
+Python 2.7.12 (default, Dec  4 2017, 14:50:18)
+[GCC 5.4.0 20160609] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>>
+```
+### Create Postgresql User Catalog
+1. With postgresql installation, the user gets a preconfigured user called postgres. First logout of your grader account and return to your virtual machine. To switch to the above mentioned user run `sudo su - postgres`
+2. Run `psql` to start working with postgresql
+3. Create the catalog user by running `CREATE ROLE catalog WITH LOGIN;`
+4. For the user catalog to create databases run `ALTER ROLE catalog CREATEDB;`
+5. To give catalog a password run `\password catalog`.
+6. To view results of this process run `\du`. The output should look like this :
+```
+									List of roles
+ Role name |                         Attributes                         | Member of 
+-----------+------------------------------------------------------------+-----------
+ catalog   | Create DB                                                  | {}
+ postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
+```
+7. Exit the psql with `\q` and logout of postgres user with Ctrl + d;
+### Create User Catalog and postgresql database
+1. In your virtual machine run `sudo adduser catalog`. Enter a password, which in this instance was catalog and fill out optional information.
+2. To give catalog sudo access run `sudo visudo`.
+3. Below grader which you gave permissions to earlier type `catalog ALL=(ALL:ALL) ALL`. Save and exit visudo.
+4. Login as catalog and to check permission run `sudo -l`.
+5. In catalog user run `createdb catalog` to create a database.
+6. To check if the database was create run `psql` and the `l`
+7. Exit from user catalog.
+### Install Git and Clone Project
+1. In your virtual machine run `sudo apt-get install git`
+2. Cd into the directory `/var/www`. Here create a directory called cakeryCatalog. Change to this directory.
+3. Here clone your github project by running `sudo git clone https://github.com/luckyrose89/Item-Catalog-Application.git cakeryCatalog`
+4. At this point change the ownership of the cakery catalog to ubuntu by running `sudo chown -R ubuntu:ubuntu cakeryCatalog/`.
+5. Cd into /var/www/cakeryCatalog/cakeryCatalog and change the name of your main python file by running `mv yourfilename.py __init__.py`
+6. Run nano on init or vim and edit the line `app.run(host='0.0.0.0', port=8000)` and just write `app.run()`
+7. Inside database_setup.py replace the lines in following manner
+```
+#engine = create_engine("sqlite:///catalog.db")
+engine=create_engine('postgresql://catalog:YOUR_CATALOG_PASSWORD@localhost/catalog')
+```
+Make this correction in all the files where this line occurs.
