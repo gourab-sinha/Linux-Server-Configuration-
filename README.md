@@ -233,7 +233,7 @@ to deactivate the default apache site on your IP address run `sudo a2dissite 000
 ## Change ownership of files
 Apache runs as `www-data` user in the system so changing ownership is important. To do this run 
 ```
-sudo chown -R www-data:www-data nuevoMexico/
+sudo chown -R www-data:www-data cakeryCatalog/
 ```
 ## Setup and Populate database
 
@@ -243,3 +243,7 @@ sudo chown -R www-data:www-data nuevoMexico/
 4. Run `sudo service apache2 restart`
 Your site is now accessible via  http://ec2-13-127-69-43.ap-south-1.compute.amazonaws.com/ and http://13.127.69.43/
 
+## Resources
+All resources for this project were provided in Udacity's course and forum
+Other links used were :
+https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps
