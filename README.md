@@ -228,7 +228,7 @@ application.secret_key = '12345'
 ```
 3. Save the file and run `sudo service apache2 restart`
 ## Deactivate the default Apache site
-to deactivate the default apache site on your IP address run `sudo a2dissite 000-default.con`
+To deactivate the default apache site on your IP address run `sudo a2dissite 000-default.con`
 
 ## Change ownership of files
 Apache runs as `www-data` user in the system so changing ownership is important. To do this run 
@@ -238,9 +238,13 @@ sudo chown -R www-data:www-data cakeryCatalog/
 ## Setup and Populate database
 
 1.Cd into /var/www/cakeryCatalog/cakeryCatalog and run `. venv/bin/activate`.
+
 2. Populate your database by running `python lotsofitems.py`.
+
 3. Deactivate the venv.
+
 4. Run `sudo service apache2 restart`
+
 Your site is now accessible via  http://ec2-13-127-69-43.ap-south-1.compute.amazonaws.com/ and http://13.127.69.43/
 
 ## Resources
