@@ -154,3 +154,92 @@ Type "help", "copyright", "credits" or "license" for more information.
 engine=create_engine('postgresql://catalog:YOUR_CATALOG_PASSWORD@localhost/catalog')
 ```
 Make this correction in all the files where this line occurs.
+
+## Google Authentication
+1. Visit your Google Developers Console.
+2. Inside Create a New Project and configure its consent screen.
+3. Once the project has been setup create it's OAuth Client ID under credentials.
+4. Edit the credentials file.
+5. Under it javascript authorized origins section add https://13.127.69.43 and
+http://ec2-13-127-69-43.ap-south-1.compute.amazonaws.com
+6. Under its authorized redirect URIs add http://ec2-13-127-69-43.ap-south-1.compute.amazonaws.com/login, http://ec2-13-127-69-43.ap-south-1.compute.amazonaws.com/gconnect and http://ec2-13-127-69-43.ap-south-1.compute.amazonaws.com/oauth2callback
+7. Download the clients_secrets json file from here and copy its content. 
+8. Use sudo nano on clients_secrets.json in the cakeryCatalog directory and delete its previous content. Paste the copied contents here. Save and exit. 
+9. In your templates folder, sudo nano into login.html and replace the previous client_ID with the new ID.
+10. In `__init__.py` reset location for the clients_secrets file to '/var/www/cakeryCatalog/cakeryCatalog/client_secrets.json '
+
+## Install Virtual Environment and dependencies
+1. Run `sudo apt-get install python-pip` to install pip.
+2. To install virtual environment run `sudo apt-get install python-virtualenv`
+3. Cd in /var/www/cakeryCatalog/cakerycatalog. Here create a virtual environment with command `virtualenv venv`. To activate ven run ` venv/bin/activate`. Once inside the venv, install the following dependencies:
+	`pip install httplib2`
+	`pip install requests`
+	`pip install --upgrade oauth2client`
+	`pip install sqlalchemy`
+	`pip install flask`
+	`sudo apt-get install libpq-dev`
+	`pip install psycopg2`
+4. In order to ensure that everything was installed and runs well type in `python __init__.py`. The output shoud look like this:
+```
+\* Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+```
+5. Deactivate venv by typing `deactivate`
+### Setup and enable the virtual host
+1. Cd into /etc/apache2/sites-available/ and create a file called cakeryCatalog.conf
+2. Edit the file and write:
+```
+<VirtualHost *:80>
+		ServerName 13.127.69.43
+		ServerAdmin emailaddress@gmail.com
+		WSGIScriptAlias / /var/www/cakeryCatalog/cakeryCatalog.wsgi
+		<Directory /var/www/cakeryCatalog/cakeryCatalog/>
+			Order allow,deny
+			Allow from all
+			Options -Indexes
+		</Directory>
+		Alias /static /var/www/cakeryCatalog/cakeryCatalog/static
+		<Directory /var/www/cakeryCatalog/cakeryCatalog/static/>
+			Order allow,deny
+			Allow from all
+			Options -Indexes
+		</Directory>
+		ErrorLog ${APACHE_LOG_DIR}/error.log
+		LogLevel warn
+		CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+```
+3. Run `sudo a2ensite cakeryCatalog`
+4. Restart Apache with `sudo service apache2 reload`
+### Create the .wsgi File
+1. Apache runs flask applications with .wsgi files. In your /var/www/cakeryCatalog create cakeryCatalog wsgi
+2. Edit that file and type:
+```
+activate_this = '/var/www/cakeryCatalog/cakeryCatalog/venv/bin/activate_this.py'
+execfile(activate_this, dict(__file__=activate_this))
+
+#!/usr/bin/python
+import sys
+import logging
+logging.basicConfig(stream=sys.stderr)
+sys.path.insert(0,"/var/www/cakeryCatalog/")
+
+from cakeryCatalog import app as application
+application.secret_key = '12345'
+```
+3. Save the file and run `sudo service apache2 restart`
+## Deactivate the default Apache site
+to deactivate the default apache site on your IP address run `sudo a2dissite 000-default.con`
+
+## Change ownership of files
+Apache runs as `www-data` user in the system so changing ownership is important. To do this run 
+```
+sudo chown -R www-data:www-data nuevoMexico/
+```
+## Setup and Populate database
+
+1.Cd into /var/www/cakeryCatalog/cakeryCatalog and run `. venv/bin/activate`.
+2. Populate your database by running `python lotsofitems.py`.
+3. Deactivate the venv.
+4. Run `sudo service apache2 restart`
+Your site is now accessible via  http://ec2-13-127-69-43.ap-south-1.compute.amazonaws.com/ and http://13.127.69.43/
+
